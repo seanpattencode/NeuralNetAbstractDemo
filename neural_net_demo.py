@@ -18,7 +18,7 @@ np.random.seed(42)
 train1=lambda X,Y,ws,α=0.01,n=100:(lambda σ:[(lambda A,δ:[((w:=ws[i][0],b:=ws[i][1]),ws.__setitem__(i,(w-α*A[i].T@δ,b-α*δ.sum(0))),i and(δ:=(δ@w.T)*A[i]*(1-A[i])))for i in range(len(ws)-1,-1,-1)])(reduce(lambda A,wb:A+[σ(A[-1]@wb[0]+wb[1])],ws,[X]),(reduce(lambda A,wb:A+[σ(A[-1]@wb[0]+wb[1])],ws,[X])[-1]-Y)*reduce(lambda A,wb:A+[σ(A[-1]@wb[0]+wb[1])],ws,[X])[-1]*(1-reduce(lambda A,wb:A+[σ(A[-1]@wb[0]+wb[1])],ws,[X])[-1]))for _ in range(n)]and ws)(lambda x:1/(1+np.exp(-x)))
 
 # =============================================================================
-# IMPLEMENTATION 2: Ultra-Short (2-3 lines)
+# IMPLEMENTATION 2: Ultra-Short
 # =============================================================================
 σ=lambda x:1/(1+np.exp(-x))
 def train2(X,Y,ws,α=.01,n=100):
