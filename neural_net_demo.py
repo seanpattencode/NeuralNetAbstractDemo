@@ -12,17 +12,21 @@ import sys
 np.random.seed(42)
 
 # =============================================================================
-# IMPLEMENTATION 1: Ultra-Short (2-3 lines)
+# IMPLEMENTATION 1: True APL One-Liner (Python translation)
+# =============================================================================
+# APL: train←{⍵-0.01×{⊃⌽{(⊂⍵,⍺),⍨(⊃⍺)(-∘(×∘⍉)¨(⊃⌽⍺))¨⍵}⍣(≢⍵)⊂(((⊃⌽A)(-∘×)(⊢-Y))×(⊃⌽A)×1-⊃⌽A),A←{⍵,⊂σ(⊃⌽⍵)+.×⍺}/⍺,⊂X}⍣1000⊢⍺}
+train1=lambda X,Y,ws,α=0.01,n=100:(lambda σ:[(lambda A,δ:[((w:=ws[i][0],b:=ws[i][1]),ws.__setitem__(i,(w-α*A[i].T@δ,b-α*δ.sum(0))),i and(δ:=(δ@w.T)*A[i]*(1-A[i])))for i in range(len(ws)-1,-1,-1)])(reduce(lambda A,wb:A+[σ(A[-1]@wb[0]+wb[1])],ws,[X]),(reduce(lambda A,wb:A+[σ(A[-1]@wb[0]+wb[1])],ws,[X])[-1]-Y)*reduce(lambda A,wb:A+[σ(A[-1]@wb[0]+wb[1])],ws,[X])[-1]*(1-reduce(lambda A,wb:A+[σ(A[-1]@wb[0]+wb[1])],ws,[X])[-1]))for _ in range(n)]and ws)(lambda x:1/(1+np.exp(-x)))
+
+# =============================================================================
+# IMPLEMENTATION 2: Ultra-Short (2-3 lines)
 # =============================================================================
 σ=lambda x:1/(1+np.exp(-x))
-def train1(X,Y,ws,α=.01,n=100):
+def train2(X,Y,ws,α=.01,n=100):
  for _ in[0]*n:A=[X];[A.append(σ(A[-1]@w+b))for w,b in ws];δ=(A[-1]-Y)*A[-1]*(1-A[-1]);[((w:=ws[i][0],b:=ws[i][1]),ws.__setitem__(i,(w-α*A[i].T@δ,b-α*δ.sum(0))),i and(δ:=(δ@w.T)*A[i]*(1-A[i])))for i in range(len(ws)-1,-1,-1)]
  return ws
 
-# =============================================================================
-# IMPLEMENTATION 2: APL-Style Translation (Compact Functional)
-# =============================================================================
-def train2(X, Y, ws, α=0.01, epochs=100):
+# Alternative APL-Style (more readable but still functional)
+def train2_alt(X, Y, ws, α=0.01, epochs=100):
     σ = lambda x: 1/(1+np.exp(-x))
     for _ in range(epochs):
         A = [X]
@@ -286,21 +290,29 @@ def main():
     print("TRAINING WITH EACH IMPLEMENTATION")
     print("="*80)
 
-    # Implementation 1: Ultra-short
-    print("\n1. ULTRA-SHORT (2 lines):")
+    # Implementation 1: True APL one-liner
+    print("\n1. TRUE APL ONE-LINER:")
     print("-" * 30)
     weights1 = copy_weights(initial_weights)
     weights1 = train1(X, Y, weights1, α=0.5, n=100)
     pred1 = forward_pass(X, weights1)
     print(f"Final predictions:\n{pred1}")
 
-    # Implementation 2: APL-style
-    print("\n2. APL-STYLE TRANSLATION:")
+    # Implementation 2: Ultra-short
+    print("\n2. ULTRA-SHORT (2 lines):")
     print("-" * 30)
     weights2 = copy_weights(initial_weights)
-    weights2 = train2(X, Y, weights2, α=0.5, epochs=100)
+    weights2 = train2(X, Y, weights2, α=0.5, n=100)
     pred2 = forward_pass(X, weights2)
     print(f"Final predictions:\n{pred2}")
+
+    # Implementation 2b: APL-style alternative
+    print("\n2b. APL-STYLE (READABLE):")
+    print("-" * 30)
+    weights2b = copy_weights(initial_weights)
+    weights2b = train2_alt(X, Y, weights2b, α=0.5, epochs=100)
+    pred2b = forward_pass(X, weights2b)
+    print(f"Final predictions:\n{pred2b}")
 
     # Implementation 3: NumPy APL
     print("\n3. NUMPY APL IMPLEMENTATION:")
@@ -332,8 +344,9 @@ def main():
     print("="*80)
 
     implementations = [
-        ("Ultra-short", pred1),
-        ("APL-style", pred2),
+        ("True APL one-liner", pred1),
+        ("Ultra-short", pred2),
+        ("APL-style", pred2b),
         ("NumPy APL", pred3),
         ("Ultra-readable", pred4),
         ("English", pred5)
@@ -365,6 +378,7 @@ def main():
     print("="*80)
 
     code_lengths = [
+        ("True APL one-liner", 1, "Direct APL translation in a single Python lambda"),
         ("Ultra-short", 2, "Extreme compression using lambdas and list comprehensions"),
         ("APL-style", 8, "Compact functional style inspired by APL"),
         ("NumPy APL", 14, "Matrix-focused NumPy implementation"),
