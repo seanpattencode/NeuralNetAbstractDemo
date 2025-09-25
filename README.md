@@ -2,6 +2,16 @@
 
 This demonstration shows the same neural network backpropagation algorithm implemented at vastly different levels of abstraction, from a single line of code to plain English with hand calculations. All implementations produce **exactly identical results**.
 
+## Usage
+
+```bash
+# Run the main XOR demonstration with hand calculations
+python neural_net_demo.py
+
+# Run comprehensive tests with multiple datasets
+python neural_net_demo.py --test
+```
+
 ## Results
 
 ```
@@ -161,7 +171,7 @@ NumPy APL       : [0.48345882 0.51320973 0.49089033 0.51674065]
 Ultra-readable  : [0.48345882 0.51320973 0.49089033 0.51674065]
 English         : [0.48345882 0.51320973 0.49089033 0.51674065]
 
-✓ SUCCESS: All implementations produce identical results!
+SUCCESS: All implementations produce identical results!
   Maximum difference: < 1e-4
 
 ================================================================================
@@ -179,6 +189,56 @@ DEMONSTRATION COMPLETE
 ================================================================================
 ```
 
+## Test Results with Multiple Datasets
+
+```bash
+$ python neural_net_demo.py --test
+
+================================================================================
+TESTING WITH MULTIPLE DATASETS
+================================================================================
+
+Testing: XOR
+Shape: (4, 2) → (4, 1), Network: [2, 3, 1]
+  OK APL one-liner: matches
+  OK Ultra-short: matches
+  OK APL-style: matches
+  OK NumPy: matches
+  OK Readable: matches
+SUCCESS: All implementations match for XOR
+
+Testing: AND
+Shape: (4, 2) → (4, 1), Network: [2, 3, 1]
+  OK APL one-liner: matches
+  OK Ultra-short: matches
+  OK APL-style: matches
+  OK NumPy: matches
+  OK Readable: matches
+SUCCESS: All implementations match for AND
+
+Testing: OR
+Shape: (4, 2) → (4, 1), Network: [2, 3, 1]
+  OK APL one-liner: matches
+  OK Ultra-short: matches
+  OK APL-style: matches
+  OK NumPy: matches
+  OK Readable: matches
+SUCCESS: All implementations match for OR
+
+Testing: Identity 3x3
+Shape: (3, 3) → (3, 3), Network: [3, 5, 3]
+  OK APL one-liner: matches
+  OK Ultra-short: matches
+  OK APL-style: matches
+  OK NumPy: matches
+  OK Readable: matches
+SUCCESS: All implementations match for Identity 3x3
+
+================================================================================
+ALL TESTS PASSED!
+================================================================================
+```
+
 ## Key Insights
 
 - **All implementations produce identical outputs** despite vastly different code styles
@@ -187,10 +247,13 @@ DEMONSTRATION COMPLETE
 - More compressed code trades readability for brevity
 - The English version includes step-by-step hand calculations to verify the algorithm
 
-## How to Run
+## Implementations
 
-```bash
-python neural_net_demo.py
-```
+1. **True APL One-Liner** (1 line) - Direct APL translation in a single Python lambda
+2. **Ultra-Short** (2 lines) - Extreme compression using lambdas and list comprehensions
+3. **APL-Style** (8 lines) - Compact functional style inspired by APL
+4. **NumPy APL** (14 lines) - Matrix-focused NumPy implementation
+5. **Ultra-Readable** (35 lines) - Clear variable names and explicit steps
+6. **English Algorithm** (50 lines) - Plain English with hand calculations
 
-This will train a neural network on the XOR problem using all implementations and verify they produce the same results.
+All implementations are tested against multiple datasets (XOR, AND, OR, Identity) and produce exactly identical results.

@@ -25,8 +25,10 @@ def train2(X,Y,ws,α=.01,n=100):
  for _ in[0]*n:A=[X];[A.append(σ(A[-1]@w+b))for w,b in ws];δ=(A[-1]-Y)*A[-1]*(1-A[-1]);[((w:=ws[i][0],b:=ws[i][1]),ws.__setitem__(i,(w-α*A[i].T@δ,b-α*δ.sum(0))),i and(δ:=(δ@w.T)*A[i]*(1-A[i])))for i in range(len(ws)-1,-1,-1)]
  return ws
 
-# Alternative APL-Style (more readable but still functional)
-def train2_alt(X, Y, ws, α=0.01, epochs=100):
+# =============================================================================
+# IMPLEMENTATION 3: APL-Style (more readable but still functional)
+# =============================================================================
+def train3_alt(X, Y, ws, α=0.01, epochs=100):
     σ = lambda x: 1/(1+np.exp(-x))
     for _ in range(epochs):
         A = [X]
@@ -39,9 +41,9 @@ def train2_alt(X, Y, ws, α=0.01, epochs=100):
     return ws
 
 # =============================================================================
-# IMPLEMENTATION 3: NumPy APL Implementation (Matrix-focused)
+# IMPLEMENTATION 4: NumPy APL Implementation (Matrix-focused)
 # =============================================================================
-def train3(X, Y, weights, lr=0.01, epochs=100):
+def train4_numpy(X, Y, weights, lr=0.01, epochs=100):
     def sigmoid(x): return 1 / (1 + np.exp(-x))
 
     for _ in range(epochs):
@@ -62,9 +64,9 @@ def train3(X, Y, weights, lr=0.01, epochs=100):
     return weights
 
 # =============================================================================
-# IMPLEMENTATION 4: Ultra-Readable Implementation
+# IMPLEMENTATION 5: Ultra-Readable Implementation
 # =============================================================================
-def train4(training_inputs, training_outputs, network_weights,
+def train5(training_inputs, training_outputs, network_weights,
           learning_rate=0.01, num_epochs=100):
     """
     Trains a neural network using backpropagation.
@@ -108,9 +110,9 @@ def train4(training_inputs, training_outputs, network_weights,
     return network_weights
 
 # =============================================================================
-# IMPLEMENTATION 5: English Algorithm (Manual Calculation)
+# IMPLEMENTATION 6: English Algorithm (Manual Calculation)
 # =============================================================================
-def train5_english(X, Y, weights, learning_rate=0.01, num_epochs=100):
+def train6_english(X, Y, weights, learning_rate=0.01, num_epochs=100):
     """
     This is the English algorithm translated to Python for verification.
     We'll demonstrate hand calculations for the first iteration.
@@ -250,9 +252,112 @@ def copy_weights(weights):
     return [(W.copy(), b.copy()) for W, b in weights]
 
 # =============================================================================
+# Testing Functions
+# =============================================================================
+def test_multiple_datasets():
+    """Test all implementations with multiple datasets to ensure identical results"""
+    print("="*80)
+    print("TESTING WITH MULTIPLE DATASETS")
+    print("="*80)
+
+    all_tests_passed = True
+
+    # Test datasets
+    test_cases = [
+        # (X, Y, name, layer_sizes, learning_rate, epochs)
+        (np.array([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=np.float32),
+         np.array([[0], [1], [1], [0]], dtype=np.float32),
+         "XOR", [2, 3, 1], 0.5, 100),
+
+        (np.array([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=np.float32),
+         np.array([[0], [0], [0], [1]], dtype=np.float32),
+         "AND", [2, 3, 1], 0.5, 100),
+
+        (np.array([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=np.float32),
+         np.array([[0], [1], [1], [1]], dtype=np.float32),
+         "OR", [2, 3, 1], 0.5, 100),
+
+        (np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=np.float32),
+         np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=np.float32),
+         "Identity 3x3", [3, 5, 3], 0.3, 200),
+    ]
+
+    for X, Y, name, layers, lr, epochs in test_cases:
+        print(f"\nTesting: {name}")
+        print(f"Shape: {X.shape} → {Y.shape}, Network: {layers}")
+
+        # Initialize weights
+        initial_weights = initialize_weights(layers)
+
+        # Test each implementation
+        results = []
+
+        # 1. APL one-liner
+        w1 = copy_weights(initial_weights)
+        w1 = train1(X, Y, w1, α=lr, n=epochs)
+        results.append(("APL one-liner", forward_pass(X, w1)))
+
+        # 2. Ultra-short
+        w2 = copy_weights(initial_weights)
+        w2 = train2(X, Y, w2, α=lr, n=epochs)
+        results.append(("Ultra-short", forward_pass(X, w2)))
+
+        # 3. APL-style
+        w3 = copy_weights(initial_weights)
+        w3 = train3_alt(X, Y, w3, α=lr, epochs=epochs)
+        results.append(("APL-style", forward_pass(X, w3)))
+
+        # 4. NumPy
+        w4 = copy_weights(initial_weights)
+        w4 = train4_numpy(X, Y, w4, lr=lr, epochs=epochs)
+        results.append(("NumPy", forward_pass(X, w4)))
+
+        # 5. Ultra-readable
+        w5 = copy_weights(initial_weights)
+        w5 = train5(X, Y, w5, learning_rate=lr, num_epochs=epochs)
+        results.append(("Readable", forward_pass(X, w5)))
+
+        # Compare results
+        reference = results[0][1]
+        all_match = True
+        for impl_name, pred in results:
+            if not np.allclose(reference, pred, atol=1e-5):
+                all_match = False
+                diff = np.max(np.abs(reference - pred))
+                print(f"  FAIL {impl_name}: max diff = {diff:.2e}")
+            else:
+                print(f"  OK {impl_name}: matches")
+
+        if not all_match:
+            all_tests_passed = False
+            print(f"FAILED: {name}")
+        else:
+            print(f"SUCCESS: All implementations match for {name}")
+
+    return all_tests_passed
+
+# =============================================================================
 # Main Demonstration
 # =============================================================================
-def main():
+def main(test_mode=False):
+    """
+    Main demonstration function.
+    Args:
+        test_mode: If True, run multiple dataset tests. If False, run XOR demo.
+    """
+
+    if test_mode:
+        # Run comprehensive tests
+        success = test_multiple_datasets()
+        if success:
+            print("\n" + "="*80)
+            print("ALL TESTS PASSED!")
+            print("="*80)
+        else:
+            print("\n" + "="*80)
+            print("SOME TESTS FAILED!")
+            print("="*80)
+        return
     print("="*80)
     print("NEURAL NETWORK IMPLEMENTATIONS AT DIFFERENT ABSTRACTION LEVELS")
     print("Demonstrating that all implementations produce identical results")
@@ -306,37 +411,37 @@ def main():
     pred2 = forward_pass(X, weights2)
     print(f"Final predictions:\n{pred2}")
 
-    # Implementation 2b: APL-style alternative
-    print("\n2b. APL-STYLE (READABLE):")
-    print("-" * 30)
-    weights2b = copy_weights(initial_weights)
-    weights2b = train2_alt(X, Y, weights2b, α=0.5, epochs=100)
-    pred2b = forward_pass(X, weights2b)
-    print(f"Final predictions:\n{pred2b}")
-
-    # Implementation 3: NumPy APL
-    print("\n3. NUMPY APL IMPLEMENTATION:")
+    # Implementation 3: APL-style alternative
+    print("\n3. APL-STYLE (READABLE):")
     print("-" * 30)
     weights3 = copy_weights(initial_weights)
-    weights3 = train3(X, Y, weights3, lr=0.5, epochs=100)
+    weights3 = train3_alt(X, Y, weights3, α=0.5, epochs=100)
     pred3 = forward_pass(X, weights3)
     print(f"Final predictions:\n{pred3}")
 
-    # Implementation 4: Ultra-readable
-    print("\n4. ULTRA-READABLE:")
+    # Implementation 4: NumPy APL
+    print("\n4. NUMPY APL IMPLEMENTATION:")
     print("-" * 30)
     weights4 = copy_weights(initial_weights)
-    weights4 = train4(X, Y, weights4, learning_rate=0.5, num_epochs=100)
+    weights4 = train4_numpy(X, Y, weights4, lr=0.5, epochs=100)
     pred4 = forward_pass(X, weights4)
     print(f"Final predictions:\n{pred4}")
 
-    # Implementation 5: English with hand calculation
-    weights5 = copy_weights(initial_weights)
-    weights5 = train5_english(X, Y, weights5, learning_rate=0.5, num_epochs=100)
-    pred5 = forward_pass(X, weights5)
-    print(f"\n5. ENGLISH ALGORITHM RESULT:")
+    # Implementation 5: Ultra-readable
+    print("\n5. ULTRA-READABLE:")
     print("-" * 30)
+    weights5 = copy_weights(initial_weights)
+    weights5 = train5(X, Y, weights5, learning_rate=0.5, num_epochs=100)
+    pred5 = forward_pass(X, weights5)
     print(f"Final predictions:\n{pred5}")
+
+    # Implementation 6: English with hand calculation
+    weights6 = copy_weights(initial_weights)
+    weights6 = train6_english(X, Y, weights6, learning_rate=0.5, num_epochs=100)
+    pred6 = forward_pass(X, weights6)
+    print(f"\n6. ENGLISH ALGORITHM RESULT:")
+    print("-" * 30)
+    print(f"Final predictions:\n{pred6}")
 
     # Verify all implementations produce the same result
     print("\n" + "="*80)
@@ -346,10 +451,10 @@ def main():
     implementations = [
         ("True APL one-liner", pred1),
         ("Ultra-short", pred2),
-        ("APL-style", pred2b),
-        ("NumPy APL", pred3),
-        ("Ultra-readable", pred4),
-        ("English", pred5)
+        ("APL-style", pred3),
+        ("NumPy APL", pred4),
+        ("Ultra-readable", pred5),
+        ("English", pred6)
     ]
 
     print("\nPrediction comparison (all should be nearly identical):")
@@ -367,10 +472,10 @@ def main():
             print(f"  Max difference: {np.max(np.abs(reference - pred))}")
 
     if all_close:
-        print("\n✓ SUCCESS: All implementations produce identical results!")
+        print("\nSUCCESS: All implementations produce identical results!")
         print("  Maximum difference: < 1e-4")
     else:
-        print("\n✗ FAILURE: Implementations produce different results")
+        print("\nFAILURE: Implementations produce different results")
 
     # Show code length comparison
     print("\n" + "="*80)
@@ -394,4 +499,10 @@ def main():
     print("="*80)
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description='Neural Network Implementations Demo')
+    parser.add_argument('--test', action='store_true',
+                        help='Run tests with multiple datasets')
+    args = parser.parse_args()
+
+    main(test_mode=args.test)
